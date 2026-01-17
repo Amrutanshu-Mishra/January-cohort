@@ -25,7 +25,7 @@ export default function Home() {
   // Logic for Start Session
   const handleSignInClick = () => {
     if (isSignedIn) {
-      router.push("/dashboard");
+      router.push("/register");
     } else {
       openSignIn({ afterSignInUrl: '/dashboard' });
     }
@@ -36,7 +36,7 @@ export default function Home() {
     if (isSignedIn) {
       router.push("/register");
     } else {
-      openSignUp({ afterSignUpUrl: '/register' });
+      openSignUp({ afterSignUpUrl: '/dashboard' });
     }
   };
 

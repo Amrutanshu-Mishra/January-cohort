@@ -2,12 +2,15 @@
 
 import { motion } from "framer-motion";
 import TiltImage from "@/components/ui/tiltImage";
+import { Lavishly_Yours } from "next/font/google";
+
+const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
 export default function ImageGroup1() {
     const images = [
-        { src: "/gap-analysis.jpg", alt: "Gap analysis" },
-        { src: "/resume-opt.jpg", alt: "Resume optimization" },
-        { src: "/roadmap.jpg", alt: "Roadmap" },
+        { src: "/gap-analysis.jpg", alt: "Gap analysis by our expert tech" },
+        { src: "/resume-opt.jpg", alt: "Resume optimization and ats improvement" },
+        { src: "/roadmap.jpg", alt: "Roadmap generation for upskill" },
     ];
 
     return (
@@ -37,7 +40,7 @@ export default function ImageGroup1() {
                             </div>
 
                             <div className="pt-4">
-                                <h3 className="text-lg font-semibold text-slate-900">{img.alt}</h3>
+                                <h3 className={`${lavishlyYours.className} text-3xl text-white text-center`}>{img.alt}</h3>
                             </div>
                         </div>
                     </motion.div>
