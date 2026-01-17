@@ -71,7 +71,7 @@ export default function Home() {
       <Background3D />
       <Header />
       <Suspense fallback={<LoadingScreen />}>
-        <main className="flex-1 bg-white">
+        <main className="flex-1 relative">
           <div className="w-screen h-auto aspect-video relative pointer-events-none">
             <video
               autoPlay
@@ -113,8 +113,8 @@ export default function Home() {
           >
             {/* Start Session Button */}
             <Button onClick={handleSignInClick}>
-        Start Session
-      </Button>
+              Start Session
+            </Button>
 
             {/* Register Button with Logic */}
             <Button onClick={handleRegisterClick}>
@@ -128,7 +128,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.5 }}
             viewport={{ once: true }}
           >
-            <ImageGroup1/>
+            <ImageGroup1 />
           </motion.div>
         </main>
       </Suspense>
