@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 export default function RegisterPage() {
   const { user } = useUser();
   const router = useRouter();
+
   const [role, setRole] = useState(null); // 'candidate' or 'recruiter'
   const [step, setStep] = useState(0);
 
@@ -73,7 +74,9 @@ export default function RegisterPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+
       </motion.div>
-    </div>
+    </div >
   );
 }

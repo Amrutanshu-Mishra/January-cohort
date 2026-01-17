@@ -20,14 +20,14 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-black/50 backdrop-blur-md border-b border-white/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop Navigation */}
-        <div className="hidden md:block py-4">
+        <div className="hidden md:block py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-5xl font-bold text-white">
                 ResumeAI
               </h1>
             </div>
@@ -35,7 +35,7 @@ export default function Header() {
             {/* Desktop Menu */}
             <Menubar className="border-0 shadow-none bg-transparent gap-2">
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
+                <MenubarTrigger className="text-white hover:text-slate-200 hover:bg-white/10 text-lg font-medium">
                   Analyze
                 </MenubarTrigger>
                 <MenubarContent className="bg-white border-slate-200">
@@ -46,7 +46,7 @@ export default function Header() {
               </MenubarMenu>
 
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
+                <MenubarTrigger className="text-white hover:text-slate-200 hover:bg-white/10 text-lg font-medium">
                   Features
                 </MenubarTrigger>
                 <MenubarContent className="bg-white border-slate-200">
@@ -57,7 +57,7 @@ export default function Header() {
               </MenubarMenu>
 
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
+                <MenubarTrigger className="text-white hover:text-slate-200 hover:bg-white/10 text-lg font-medium">
                   Resources
                 </MenubarTrigger>
                 <MenubarContent className="bg-white border-slate-200">
@@ -71,10 +71,10 @@ export default function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="md:hidden py-4">
+        <div className="md:hidden py-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-3xl font-bold text-white">
               ResumeAI
             </h1>
 
@@ -85,9 +85,9 @@ export default function Header() {
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X size={24} className="text-slate-900" />
+                <X size={24} className="text-white" />
               ) : (
-                <Menu size={24} className="text-slate-900" />
+                <Menu size={24} className="text-white" />
               )}
             </button>
           </div>
