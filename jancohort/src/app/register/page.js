@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUser, useClerk, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -12,48 +12,51 @@ export default function RegisterPage() {
 
   const [designation, setDesignation] = useState(null); // 'student' or 'organisation'
   const [isSyncing, setIsSyncing] = useState(false);
+  const hasRedirected = useRef(false);
 
   // Sync role to Clerk metadata after login
   useEffect(() => {
     const syncRole = async () => {
-      if (isLoaded && isSignedIn && user) {
-        const existingRole = user.unsafeMetadata?.role;
+      if (!isLoaded || !isSignedIn || !user || hasRedirected.current) return;
 
-        // 1. Proactive Redirect: If role exists, go to dashboard
-        if (existingRole) {
-          redirectUser(existingRole);
-          return;
-        }
+      const existingRole = user.unsafeMetadata?.role;
 
-        // 2. Metadata Update: If we just finished selection/auth and have a designation
-        const storedDesignation = designation || localStorage.getItem("selected_designation");
+      // 1. Proactive Redirect: If role exists, go to dashboard
+      if (existingRole) {
+        hasRedirected.current = true;
+        redirectUser(existingRole);
+        return;
+      }
 
-        if (storedDesignation) {
-          setIsSyncing(true);
-          try {
-            await user.update({
-              unsafeMetadata: {
-                role: storedDesignation
-              }
-            });
-            localStorage.removeItem("selected_designation");
-            redirectUser(storedDesignation);
-          } catch (err) {
-            console.error("Error updating clerk metadata:", err);
-            setIsSyncing(false);
-          }
+      // 2. Metadata Update: If we just finished selection/auth and have a designation
+      const storedDesignation = designation || localStorage.getItem("selected_designation");
+
+      if (storedDesignation) {
+        setIsSyncing(true);
+        try {
+          await user.update({
+            unsafeMetadata: {
+              role: storedDesignation
+            }
+          });
+          localStorage.removeItem("selected_designation");
+          hasRedirected.current = true;
+          redirectUser(storedDesignation);
+        } catch (err) {
+          console.error("Error updating clerk metadata:", err);
+          setIsSyncing(false);
         }
       }
     };
 
     syncRole();
-  }, [isLoaded, isSignedIn, user, designation]);
+  }, [isLoaded, isSignedIn, user?.id, user?.unsafeMetadata?.role, designation]);
 
   const redirectUser = (role) => {
     if (role === 'student') {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } else if (role === 'organisation') {
-      router.push("/recruiter-dashboard");
+      router.replace("/recruiter-dashboard");
     }
   };
 
@@ -62,9 +65,11 @@ export default function RegisterPage() {
     localStorage.setItem("selected_designation", role);
   };
 
-  // Show global loader if Clerk hasn't loaded, if we are currently syncing,
-  // or if the user is signed in and we are checking for their role to redirect them.
-  if (!isLoaded || isSyncing || (isSignedIn && user?.unsafeMetadata?.role)) {
+  // Improved loader condition: only show if we are actually waiting for Clerk,
+  // syncing metadata, or have just triggered a redirect.
+  const isRedirecting = isSignedIn && user?.unsafeMetadata?.role;
+
+  if (!isLoaded || isSyncing || (isRedirecting && !hasRedirected.current)) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
@@ -129,7 +134,7 @@ export default function RegisterPage() {
                 {!isSignedIn ? (
                   <>
                     <button
-                      onClick={() => openSignUp()}
+                      onClick={() => openSignUp({ forceRedirectUrl: '/register' })}
                       className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/20"
                     >
                       Get Started <ArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -139,7 +144,7 @@ export default function RegisterPage() {
                       <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-900 px-2 text-slate-500 font-semibold tracking-widest leading-6">Already have an account?</span></div>
                     </div>
                     <button
-                      onClick={() => openSignIn()}
+                      onClick={() => openSignIn({ forceRedirectUrl: '/register' })}
                       className="w-full py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold text-lg transition-all"
                     >
                       Sign In

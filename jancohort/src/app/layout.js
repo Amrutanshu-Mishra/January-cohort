@@ -24,8 +24,10 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider
       publishableKey="pk_test_Z2FtZS1saXphcmQtNzcuY2xlcmsuYWNjb3VudHMuZGV2JA"
-      afterSignInUrl="/register"
-      afterSignUpUrl="/register"
+      signInFallbackRedirectUrl="/register"
+      signUpFallbackRedirectUrl="/register"
+      signInForceRedirectUrl="/register"
+      signUpForceRedirectUrl="/register"
     >
       <html lang="en">
         <body
