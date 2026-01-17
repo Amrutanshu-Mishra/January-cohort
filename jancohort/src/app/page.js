@@ -16,17 +16,18 @@ import { useClerk, useUser } from "@clerk/nextjs";
 const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
 import Background3D from "@/components/Background3D";
+import WaveParticles from "@/components/WaveParticles";
+
+import Footer from "./footer";
 
 export default function Home() {
   const { openSignIn, openSignUp } = useClerk();
-  const { isSignedIn } = useUser(); // 3. Check if user is logged in
-  const router = useRouter(); // 4. Initialize router
+  const { isSignedIn } = useUser();
+  const router = useRouter();
 
-  // Logic for Start Session
-  // Logic for Start Session
   const handleSignInClick = () => {
     if (isSignedIn) {
-      router.push("/register"); // Ensure signed-in users go to selection
+      router.push("/register");
     } else {
       openSignIn({
         forceRedirectUrl: '/register',
@@ -35,14 +36,14 @@ export default function Home() {
     }
   };
 
-  // Logic for Register
   const handleRegisterClick = () => {
     if (isSignedIn) {
       router.push("/register");
     } else {
-
-      openSignUp({ afterSignUpUrl: '/dashboard' });
-
+      openSignUp({
+        forceRedirectUrl: '/register',
+        fallbackRedirectUrl: '/register'
+      });
     }
   };
 
@@ -136,6 +137,9 @@ export default function Home() {
           >
             <ImageGroup1 />
           </motion.div>
+
+          <WaveParticles />
+          <Footer />
         </main>
       </Suspense>
     </>

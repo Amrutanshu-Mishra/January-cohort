@@ -2,6 +2,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 
 import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,7 +22,6 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    // 2. USE THE IMPORTED COMPONENT HERE
     <ClerkProvider
       publishableKey="pk_test_Z2FtZS1saXphcmQtNzcuY2xlcmsuYWNjb3VudHMuZGV2JA"
       afterSignInUrl="/register"

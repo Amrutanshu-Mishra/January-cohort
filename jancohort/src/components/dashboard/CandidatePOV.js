@@ -55,12 +55,12 @@ export default function CandidatePOV() {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc]">
+    <div className="flex h-screen bg-slate-950 text-white">
       {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-slate-200 p-6 flex flex-col">
+      <aside className="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col">
         <div className="flex items-center gap-2 mb-10 px-2">
-          <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
-          <h1 className="text-xl font-bold text-slate-900">Pro-Guide</h1>
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">P</div>
+          <h1 className="text-xl font-bold text-white">Pro-Guide</h1>
         </div>
 
         <nav className="space-y-1 flex-1">
@@ -84,11 +84,11 @@ export default function CandidatePOV() {
           />
         </nav>
 
-        <div className="pt-6 border-t border-slate-100 flex items-center gap-3">
+        <div className="pt-6 border-t border-slate-800 flex items-center gap-3">
           <UserButton afterSignOutUrl="/" />
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-slate-900">{user?.firstName}</span>
-            <span className="text-xs text-slate-500 uppercase tracking-wider">Candidate</span>
+            <span className="text-sm font-bold text-white">{user?.firstName}</span>
+            <span className="text-xs text-slate-400 uppercase tracking-wider">Candidate</span>
           </div>
         </div>
 
@@ -98,10 +98,10 @@ export default function CandidatePOV() {
       <main className="flex-1 overflow-y-auto p-8">
         <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">
+            <h2 className="text-3xl font-bold text-white">
               {activeView === 'jobs' ? 'Recommended for You' : activeView === 'skills' ? 'Skill Gap Analysis' : 'Learning Paths'}
             </h2>
-            <p className="text-slate-500">
+            <p className="text-slate-400">
               {activeView === 'jobs' ? 'Based on your parsed resume and skill profile.' : 'Track your improvement over time.'}
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function CandidatePOV() {
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-5 py-3 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg hover:shadow-orange-500/20 active:scale-95"
+              className="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95"
             >
               <FileUp size={20} />
               Upload Resume
@@ -130,17 +130,17 @@ export default function CandidatePOV() {
               <motion.div
                 key={job.id}
                 whileHover={{ y: -4 }}
-                className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between"
+                className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm flex items-center justify-between"
               >
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">
+                  <div className="w-14 h-14 bg-slate-800 rounded-xl flex items-center justify-center text-slate-400">
                     <Briefcase size={28} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">{job.role}</h3>
-                    <p className="text-slate-500">{job.company}</p>
+                    <h3 className="text-lg font-bold text-white">{job.role}</h3>
+                    <p className="text-slate-400">{job.company}</p>
                     {job.missing.length > 0 && (
-                      <p className="text-xs mt-2 text-orange-600 font-medium">
+                      <p className="text-xs mt-2 text-blue-400 font-medium">
                         Gap detected: {job.missing.join(", ")}
                       </p>
                     )}
@@ -148,11 +148,11 @@ export default function CandidatePOV() {
                 </div>
 
                 <div className="text-right">
-                  <div className={`text-2xl font-black ${job.match >= 80 ? 'text-green-600' : 'text-orange-500'}`}>
+                  <div className={`text-2xl font-black ${job.match >= 80 ? 'text-green-500' : 'text-blue-500'}`}>
                     {job.match}%
                   </div>
-                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Match Score</p>
-                  <button className="mt-3 px-4 py-2 bg-slate-900 text-white text-sm rounded-lg font-medium hover:bg-slate-800 transition-all">
+                  <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Match Score</p>
+                  <button className="mt-3 px-4 py-2 bg-white text-slate-950 text-sm rounded-lg font-bold hover:bg-slate-200 transition-all">
                     Apply Now
                   </button>
                 </div>
@@ -162,25 +162,26 @@ export default function CandidatePOV() {
         )}
 
         {activeView === "skills" && (
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-[400px]">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">Skill Gap Reduction Over Time</h3>
+          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm h-[400px]">
+            <h3 className="text-lg font-bold text-white mb-6">Skill Gap Reduction Over Time</h3>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={skillGapData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" stroke="#64748b" tick={{ fill: '#64748b' }} />
-                <YAxis stroke="#64748b" tick={{ fill: '#64748b' }} label={{ value: 'Gap %', angle: -90, position: 'insideLeft', fill: '#64748b' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="name" stroke="#94a3b8" tick={{ fill: '#94a3b8' }} />
+                <YAxis stroke="#94a3b8" tick={{ fill: '#94a3b8' }} label={{ value: 'Gap %', angle: -90, position: 'insideLeft', fill: '#94a3b8' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155', color: '#fff' }}
+                  itemStyle={{ color: '#fff' }}
                 />
                 <Legend />
-                <Line type="monotone" dataKey="gap" stroke="#ea580c" strokeWidth={3} activeDot={{ r: 8 }} name="Skill Gap %" />
+                <Line type="monotone" dataKey="gap" stroke="#3b82f6" strokeWidth={3} activeDot={{ r: 8 }} name="Skill Gap %" />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
 
         {activeView === "learning" && (
-          <div className="flex items-center justify-center h-64 text-slate-400">
+          <div className="flex items-center justify-center h-64 text-slate-500">
             <p>Learning paths module coming soon...</p>
           </div>
         )}
@@ -194,7 +195,7 @@ function NavItem({ icon, label, active = false, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${active ? 'bg-orange-50 text-orange-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
     >
       {icon}
       <span className="font-medium">{label}</span>

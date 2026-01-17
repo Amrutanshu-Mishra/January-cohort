@@ -14,38 +14,72 @@ export default function ImageGroup1() {
     ];
 
     return (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch bg-sky-900/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-                {images.map((img) => (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 space-y-32">
+            {images.map((img, index) => (
+                <div
+                    key={img.src}
+                    className={`flex flex-col md:flex-row items-center gap-12 ${index % 2 === 1 ? 'md:flex-row-reverse' : ''
+                        }`}
+                >
+                    {/* Image Side */}
                     <motion.div
-                        key={img.src}
-                        className="w-full rounded-2xl overflow-visible"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true }}
+                        className="w-full md:w-1/2"
+                        initial={{ opacity: 0, x: index % 2 === 1 ? 50 : -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, type: "spring" }}
+                        viewport={{ once: true, margin: "-100px" }}
                     >
-                        <div className="relative rounded-2xl p-4 md:p-6 lg:p-8">
-                            {/* shared translucent gradient background behind the image */}
-                            <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-sky-500/10 via-sky-900/10 to-transparent border border-white/5" />
-
-                            <div className="w-full aspect-video flex items-center justify-center overflow-hidden">
-                                <TiltImage
-                                    src={img.src}
-                                    alt={img.alt}
-                                    width={1200}
-                                    height={800}
-                                    className="w-full h-full"
-                                />
-                            </div>
-
-                            <div className="pt-4">
-                                <h3 className={`${lavishlyYours.className} text-3xl text-white text-center`}>{img.alt}</h3>
-                            </div>
-                        </div>
+                        <TiltImage
+                            src={img.src}
+                            alt={img.alt}
+                            width={800}
+                            height={600}
+                            className="w-full aspect-[4/3] object-cover rounded-2xl shadow-2xl border border-white/10"
+                        />
                     </motion.div>
-                ))}
-            </div>
+
+                    {/* Text Side */}
+                    <div className="w-full md:w-1/2 text-center md:text-left">
+                        <TypewriterText text={img.alt} className={`${lavishlyYours.className} text-4xl md:text-6xl text-white leading-tight`} />
+                    </div>
+                </div>
+            ))}
         </section>
+    );
+}
+
+function TypewriterText({ text, className }) {
+    const characters = text.split("");
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.05,
+                delayChildren: 0.3
+            }
+        }
+    };
+
+    const charVariants = {
+        hidden: { opacity: 0, y: 10 },
+        visible: { opacity: 1, y: 0 }
+    };
+
+    return (
+        <motion.h3
+            className={className}
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+        >
+            {characters.map((char, index) => (
+                <motion.span key={index} variants={charVariants}>
+                    {char}
+                </motion.span>
+            ))}
+        </motion.h3>
     );
 }
