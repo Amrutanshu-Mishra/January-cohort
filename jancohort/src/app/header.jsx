@@ -20,14 +20,14 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-slate-950 border-b border-slate-800 shadow-sm">
+    <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Desktop Navigation */}
         <div className="hidden md:block py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-slate-900">
                 ResumeAI
               </h1>
             </div>
@@ -35,35 +35,35 @@ export default function Header() {
             {/* Desktop Menu */}
             <Menubar className="border-0 shadow-none bg-transparent gap-2">
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
                   Analyze
                 </MenubarTrigger>
-                <MenubarContent className="bg-slate-900 border-slate-800">
-                  <MenubarItem className="text-slate-300 hover:text-white">Upload Resume</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">View Reports</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">Recommendations</MenubarItem>
+                <MenubarContent className="bg-white border-slate-200">
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Upload Resume</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">View Reports</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Recommendations</MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
 
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
                   Features
                 </MenubarTrigger>
-                <MenubarContent className="bg-slate-900 border-slate-800">
-                  <MenubarItem className="text-slate-300 hover:text-white">ATS Optimization</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">Keyword Matching</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">Score Analysis</MenubarItem>
+                <MenubarContent className="bg-white border-slate-200">
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">ATS Optimization</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Keyword Matching</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Score Analysis</MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
 
               <MenubarMenu>
-                <MenubarTrigger className="text-slate-300 hover:text-white hover:bg-slate-800">
+                <MenubarTrigger className="text-slate-700 hover:text-slate-900 hover:bg-slate-100">
                   Resources
                 </MenubarTrigger>
-                <MenubarContent className="bg-slate-900 border-slate-800">
-                  <MenubarItem className="text-slate-300 hover:text-white">Blog</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">FAQ</MenubarItem>
-                  <MenubarItem className="text-slate-300 hover:text-white">Tips & Tricks</MenubarItem>
+                <MenubarContent className="bg-white border-slate-200">
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Blog</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">FAQ</MenubarItem>
+                  <MenubarItem className="text-slate-700 hover:text-slate-900">Tips & Tricks</MenubarItem>
                 </MenubarContent>
               </MenubarMenu>
             </Menubar>
@@ -74,20 +74,20 @@ export default function Header() {
         <div className="md:hidden py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-slate-900">
               ResumeAI
             </h1>
 
             {/* Hamburger Menu */}
             <button
               onClick={toggleMobileMenu}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
-                <X size={24} className="text-white" />
+                <X size={24} className="text-slate-900" />
               ) : (
-                <Menu size={24} className="text-white" />
+                <Menu size={24} className="text-slate-900" />
               )}
             </button>
           </div>
@@ -119,7 +119,7 @@ function MobileMenuItem({ label }) {
     <div>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-2 text-left font-medium text-white hover:bg-slate-800 rounded-lg transition-colors flex justify-between items-center"
+        className="w-full px-4 py-2 text-left font-medium text-slate-900 hover:bg-slate-100 rounded-lg transition-colors flex justify-between items-center"
       >
         {label}
         <span className={`transition-transform ${expanded ? "rotate-180" : ""}`}>
@@ -131,7 +131,7 @@ function MobileMenuItem({ label }) {
           {menuItems[label].map((item) => (
             <button
               key={item}
-              className="w-full px-4 py-2 text-left text-sm text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              className="w-full px-4 py-2 text-left text-sm text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
             >
               {item}
             </button>
