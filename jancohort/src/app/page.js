@@ -2,12 +2,11 @@
 
 import Image from "next/image";
 import Header from "./header";
-import Loader from "@/components/ui/loader";
-import { Suspense } from "react";
+import Loader from "@/components/ui/loader";import Button from "@/components/ui/main_button";import { Suspense } from "react";
 
 import { Lavishly_Yours } from "next/font/google";
 
-import {motion} from "framer-motion"
+import { motion } from "framer-motion"
 
 const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
@@ -42,7 +41,7 @@ export default function Home() {
     <>
       <Header />
       <Suspense fallback={<LoadingScreen />}>
-        <main className="flex-1 bg-white relative">
+        <main className="flex-1 bg-white">
           {/* Full Width Responsive Video */}
           <div className="w-screen h-auto aspect-video relative pointer-events-none">
             <video
@@ -76,8 +75,20 @@ export default function Home() {
               ))}
             </motion.h1>
           </div>
+
+          {/* Button Below Video */}
+          <motion.div
+            className="flex justify-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            viewport={{ once: true }}
+          >
+            <Button />
+          </motion.div>
         </main>
       </Suspense>
+      
     </>
   );
 }
