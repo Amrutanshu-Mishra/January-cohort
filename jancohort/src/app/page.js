@@ -26,11 +26,7 @@ export default function Home() {
   // Logic for Start Session
   const handleSignInClick = () => {
     if (isSignedIn) {
-<<<<<<< Updated upstream
-      router.push("/register");
-=======
       router.push("/register"); // Ensure signed-in users go to selection
->>>>>>> Stashed changes
     } else {
       openSignIn({
         forceRedirectUrl: '/register',
@@ -44,14 +40,9 @@ export default function Home() {
     if (isSignedIn) {
       router.push("/register");
     } else {
-<<<<<<< Updated upstream
+
       openSignUp({ afterSignUpUrl: '/dashboard' });
-=======
-      openSignUp({
-        forceRedirectUrl: '/register',
-        fallbackRedirectUrl: '/register'
-      });
->>>>>>> Stashed changes
+
     }
   };
 
