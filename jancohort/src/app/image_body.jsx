@@ -12,7 +12,7 @@ export default function ImageGroup1() {
 
     return (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch bg-sky-900/20 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
                 {images.map((img) => (
                     <motion.div
                         key={img.src}
@@ -23,10 +23,10 @@ export default function ImageGroup1() {
                         viewport={{ once: true }}
                     >
                         <div className="relative rounded-2xl p-4 md:p-6 lg:p-8">
-                            {/* shared light-blue gradient background behind the image */}
-                            <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-sky-100 via-sky-50 to-white" />
+                            {/* shared translucent gradient background behind the image */}
+                            <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-br from-sky-500/10 via-sky-900/10 to-transparent border border-white/5" />
 
-                            <div className="w-full h-64 md:h-72 lg:h-80 flex items-center justify-center">
+                            <div className="w-full aspect-video flex items-center justify-center overflow-hidden">
                                 <TiltImage
                                     src={img.src}
                                     alt={img.alt}

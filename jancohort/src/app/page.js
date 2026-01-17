@@ -15,6 +15,8 @@ import { useClerk, useUser } from "@clerk/nextjs";
 
 const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
+import Background3D from "@/components/Background3D";
+
 export default function Home() {
   const { openSignIn, openSignUp } = useClerk();
   const { isSignedIn } = useUser(); // 3. Check if user is logged in
@@ -66,6 +68,7 @@ export default function Home() {
 
   return (
     <>
+      <Background3D />
       <Header />
       <Suspense fallback={<LoadingScreen />}>
         <main className="flex-1 bg-white">
@@ -125,7 +128,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.5 }}
             viewport={{ once: true }}
           >
-            <ImageGroup1 />
+            <ImageGroup1/>
           </motion.div>
         </main>
       </Suspense>
