@@ -13,6 +13,8 @@ import { motion } from "framer-motion"
 
 const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
+import Background3D from "@/components/Background3D";
+
 export default function Home() {
   const text = "Let us guide you to your success";
   const characters = text.split("");
@@ -42,9 +44,10 @@ export default function Home() {
 
   return (
     <>
+      <Background3D />
       <Header />
       <Suspense fallback={<LoadingScreen />}>
-        <main className="flex-1 bg-white">
+        <main className="flex-1 relative">
           {/* Full Width Responsive Video */}
           <div className="w-screen h-auto aspect-video relative pointer-events-none">
             <video
@@ -97,11 +100,11 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.5 }}
             viewport={{ once: true }}
           >
-            <ImageGroup1 />
+            <ImageGroup1/>
           </motion.div>
         </main>
       </Suspense>
-      
+
     </>
   );
 }
