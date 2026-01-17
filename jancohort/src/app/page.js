@@ -8,43 +8,22 @@ import ImageGroup1 from "./image_body";
 import { Suspense } from "react";
 import { Lavishly_Yours } from "next/font/google";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation"; // 1. Import useRouter
+import { useRouter } from "next/navigation";
 
-// 2. Import useUser along with useClerk
 import { useClerk, useUser } from "@clerk/nextjs";
 
 const lavishlyYours = Lavishly_Yours({ subsets: ["latin"], weight: "400" });
 
 import Background3D from "@/components/Background3D";
 import WaveParticles from "@/components/WaveParticles";
-
 import Footer from "./footer";
 
 export default function Home() {
-  const { openSignIn, openSignUp } = useClerk();
-  const { isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
 
-  const handleSignInClick = () => {
-    if (isSignedIn) {
-      router.push("/register");
-    } else {
-      openSignIn({
-        forceRedirectUrl: '/register',
-        fallbackRedirectUrl: '/register'
-      });
-    }
-  };
-
-  const handleRegisterClick = () => {
-    if (isSignedIn) {
-      router.push("/register");
-    } else {
-      openSignUp({
-        forceRedirectUrl: '/register',
-        fallbackRedirectUrl: '/register'
-      });
-    }
+  const handleGetStarted = () => {
+    router.push("/register");
   };
 
   const text = "Let us guide you to your success";
@@ -110,22 +89,16 @@ export default function Home() {
             </motion.h1>
           </div>
 
-          {/* Centered Buttons Container */}
+          {/* Centered Button Container */}
           <motion.div
-            className="relative z-50 flex flex-col sm:flex-row items-center justify-center gap-6 py-12 pointer-events-auto"
+            className="relative z-50 flex items-center justify-center py-12 pointer-events-auto"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            {/* Start Session Button */}
-            <Button onClick={handleSignInClick}>
-              Start Session
-            </Button>
-
-            {/* Register Button with Logic */}
-            <Button onClick={handleRegisterClick}>
-              Register Now
+            <Button onClick={handleGetStarted}>
+              Get started
             </Button>
           </motion.div>
 
@@ -148,7 +121,7 @@ export default function Home() {
 
 function LoadingScreen() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
+    <div className="flex items-center justify-center min-h-screen bg-slate-950">
       <Loader />
     </div>
   );

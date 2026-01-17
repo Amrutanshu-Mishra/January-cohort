@@ -6,10 +6,14 @@ import { useUser } from "@clerk/nextjs";
 export default function RecruiterDashboardPage() {
     const { isLoaded } = useUser();
 
-    if (!isLoaded) return <Loader />;
+    if (!isLoaded) return (
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+            <Loader />
+        </div>
+    );
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-slate-950">
             <RecruiterPOV />
         </div>
     );

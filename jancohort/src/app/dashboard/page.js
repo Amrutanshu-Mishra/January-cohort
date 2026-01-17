@@ -7,10 +7,14 @@ import Loader from "@/components/ui/loader";
 export default function DashboardPage() {
   const { isLoaded } = useUser();
 
-  if (!isLoaded) return <Loader />;
+  if (!isLoaded) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <Loader />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-slate-950">
       <CandidatePOV />
     </div>
   );
