@@ -1,5 +1,5 @@
 // 1. ADD THIS IMPORT AT THE VERY TOP
-import { ClerkProvider } from "@clerk/nextjs"; 
+import { ClerkProvider } from "@clerk/nextjs";
 
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -22,7 +22,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     // 2. USE THE IMPORTED COMPONENT HERE
-    <ClerkProvider publishableKey="pk_test_Z2FtZS1saXphcmQtNzcuY2xlcmsuYWNjb3VudHMuZGV2JA">
+    <ClerkProvider
+      publishableKey="pk_test_Z2FtZS1saXphcmQtNzcuY2xlcmsuYWNjb3VudHMuZGV2JA"
+      afterSignInUrl="/register"
+      afterSignUpUrl="/register"
+    >
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-slate-900`}

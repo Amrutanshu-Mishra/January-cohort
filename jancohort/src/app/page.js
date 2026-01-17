@@ -23,11 +23,19 @@ export default function Home() {
   const router = useRouter(); // 4. Initialize router
 
   // Logic for Start Session
+  // Logic for Start Session
   const handleSignInClick = () => {
     if (isSignedIn) {
+<<<<<<< Updated upstream
       router.push("/register");
+=======
+      router.push("/register"); // Ensure signed-in users go to selection
+>>>>>>> Stashed changes
     } else {
-      openSignIn({ afterSignInUrl: '/dashboard' });
+      openSignIn({
+        forceRedirectUrl: '/register',
+        fallbackRedirectUrl: '/register'
+      });
     }
   };
 
@@ -36,7 +44,14 @@ export default function Home() {
     if (isSignedIn) {
       router.push("/register");
     } else {
+<<<<<<< Updated upstream
       openSignUp({ afterSignUpUrl: '/dashboard' });
+=======
+      openSignUp({
+        forceRedirectUrl: '/register',
+        fallbackRedirectUrl: '/register'
+      });
+>>>>>>> Stashed changes
     }
   };
 
