@@ -27,7 +27,8 @@ import {
   ChevronDown,
   Github,
   Linkedin,
-  Globe
+  Globe,
+  Sparkles
 } from "lucide-react";
 import {
   getCompanyProfile,
@@ -36,7 +37,8 @@ import {
   deleteJob,
   getCompanyStats,
   getAllCompanyApplicants,
-  updateApplicantStatus
+  updateApplicantStatus,
+  generateJobDescription
 } from "@/lib/api";
 
 export default function RecruiterPOV() {
@@ -55,6 +57,10 @@ export default function RecruiterPOV() {
   const [success, setSuccess] = useState(null);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // AI Generation State
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
 
   // New job form state
   const [newJob, setNewJob] = useState({
@@ -96,6 +102,40 @@ export default function RecruiterPOV() {
     }
     fetchData();
   }, [getToken]);
+
+  // Handle AI Job Description Generation
+  const handleGenerateDescription = async () => {
+    if (!aiPrompt.trim()) {
+      setError('Please enter a prompt for AI generation');
+      return;
+    }
+
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const result = await generateJobDescription(aiPrompt, getToken);
+      const data = result.data;
+
+      setNewJob(prev => ({
+        ...prev,
+        title: data.title || prev.title,
+        description: data.description || prev.description,
+        requirements: data.requirements ? data.requirements.join(', ') : prev.requirements,
+        location: data.location || prev.location,
+        salary: data.salary || prev.salary,
+        type: data.type || prev.type,
+      }));
+
+      setSuccess('Job description generated successfully!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Error generating description:", err);
+      setError(err.message || 'Failed to generate description');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Handle job creation with AWS email notification
   const handleCreateJob = async () => {
@@ -669,6 +709,29 @@ export default function RecruiterPOV() {
                 <button onClick={() => setShowJobModal(false)} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                   <X className="w-5 h-5 text-slate-400" />
                 </button>
+              </div>
+
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm font-bold text-blue-400">AI Assistant</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="e.g. Senior React Developer for a fintech startup in NYC..."
+                    className="flex-1 px-4 py-2 bg-slate-900/50 border border-blue-500/20 rounded-lg text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50"
+                  />
+                  <button
+                    onClick={handleGenerateDescription}
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">

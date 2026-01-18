@@ -142,6 +142,16 @@ export async function deleteJob(jobId, getToken) {
 }
 
 /**
+ * Generate job description using AI (company only)
+ */
+export async function generateJobDescription(prompt, getToken) {
+     return apiRequest('/jobs/generate-description', {
+          method: 'POST',
+          body: JSON.stringify({ prompt }),
+     }, getToken);
+}
+
+/**
  * Evaluate skill gap for a job before applying
  * Returns analysis and whether there's a significant gap
  */
