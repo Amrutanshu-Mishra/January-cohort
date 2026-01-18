@@ -1,194 +1,328 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useUser, useClerk, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Building2, ArrowRight, Loader2 } from "lucide-react";
+import { registerCompany, syncUser } from "@/lib/api";
+import { Building2, User, Loader2, CheckCircle, AlertCircle, Rocket, Briefcase } from "lucide-react";
 
 export default function RegisterPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
-  const { openSignIn, openSignUp } = useClerk();
+  const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
 
-  const [designation, setDesignation] = useState(null); // 'student' or 'organisation'
-  const [isSyncing, setIsSyncing] = useState(false);
-  const hasRedirected = useRef(false);
+  const [role, setRole] = useState(null); // 'candidate' or 'recruiter'
+  const [step, setStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  // Sync role to Clerk metadata after login
+  // State matching Company Mongoose Schema
+  const [companyData, setCompanyData] = useState({
+    companyName: "",
+    website: "",
+    description: "",
+    industry: "",
+    size: "Startup",
+  });
+
+  // Check if user already has a role (redirect if so)
   useEffect(() => {
-    const syncRole = async () => {
-      if (!isLoaded || !isSignedIn || !user || hasRedirected.current) return;
-
-      const existingRole = user.unsafeMetadata?.role;
-
-      // 1. Proactive Redirect: If role exists, go to dashboard
-      if (existingRole) {
-        hasRedirected.current = true;
-        redirectUser(existingRole);
-        return;
+    if (isLoaded && user?.publicMetadata?.role) {
+      const existingRole = user.publicMetadata.role;
+      if (existingRole === 'company') {
+        router.push('/recruiter-dashboard');
+      } else if (existingRole === 'user') {
+        router.push('/dashboard');
       }
+    }
+  }, [isLoaded, user, router]);
 
-      // 2. Metadata Update: If we just finished selection/auth and have a designation
-      const storedDesignation = designation || localStorage.getItem("selected_designation");
+  // Handle candidate selection - sync user to MongoDB and redirect
+  const handleCandidateSelection = async () => {
+    setIsSubmitting(true);
+    setError(null);
 
-      if (storedDesignation) {
-        setIsSyncing(true);
-        try {
-          await user.update({
-            unsafeMetadata: {
-              role: storedDesignation
-            }
-          });
-          localStorage.removeItem("selected_designation");
-          hasRedirected.current = true;
-          redirectUser(storedDesignation);
-        } catch (err) {
-          console.error("Error updating clerk metadata:", err);
-          setIsSyncing(false);
-        }
-      }
-    };
+    try {
+      // Sync user to MongoDB (webhook might have done this already, but this ensures it)
+      await syncUser(getToken);
 
-    syncRole();
-  }, [isLoaded, isSignedIn, user?.id, user?.unsafeMetadata?.role, designation]);
-
-  const redirectUser = (role) => {
-    if (role === 'student') {
-      router.replace("/dashboard");
-    } else if (role === 'organisation') {
-      router.replace("/recruiter-dashboard");
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 1000);
+    } catch (err) {
+      console.error("Error syncing user:", err);
+      // Even if sync fails, the user was likely already created via webhook
+      // Still redirect to dashboard
+      router.push('/dashboard');
     }
   };
 
-  const handleSelect = (role) => {
-    setDesignation(role);
-    localStorage.setItem("selected_designation", role);
+  // Handle company registration
+  const finishCompanyRegistration = async () => {
+    if (!companyData.companyName.trim()) {
+      setError("Company name is required");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await registerCompany(companyData, getToken);
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/recruiter-dashboard');
+      }, 1000);
+    } catch (err) {
+      console.error("Error registering company:", err);
+      setError(err.message || "Failed to register company. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
-  // Improved loader condition: only show if we are actually waiting for Clerk,
-  // syncing metadata, or have just triggered a redirect.
-  const isRedirecting = isSignedIn && user?.unsafeMetadata?.role;
-
-  if (!isLoaded || isSyncing || (isRedirecting && !hasRedirected.current)) {
+  if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-        <p className="text-slate-400 font-medium tracking-wide">
-          {isSyncing ? "Finalizing your profile..." : "Checking credentials..."}
-        </p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="w-8 h-8 text-orange-500" />
+        </motion.div>
       </div>
     );
   }
 
-  const currentRole = designation || user?.unsafeMetadata?.role;
-
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+      {/* Background decorations */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl w-full bg-slate-900/50 backdrop-blur-xl rounded-3xl p-10 shadow-2xl border border-white/10"
+        layout
+        className="relative max-w-xl w-full bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10"
       >
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-orange-500/30">
+            <Rocket className="w-5 h-5" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Pro-Guide</h1>
+        </div>
+
         <AnimatePresence mode="wait">
-          {!currentRole ? (
+          {/* Success State */}
+          {success && (
             <motion.div
-              key="step-select"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="text-center space-y-8"
+              key="success"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8"
             >
-              <div className="space-y-2">
-                <h2 className="text-4xl font-bold text-white tracking-tight">Select Designation</h2>
-                <p className="text-slate-400">Choose how you want to use ResumeAI</p>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              >
+                <CheckCircle className="w-20 h-20 text-green-500 mx-auto mb-4" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white mb-2">You're all set!</h2>
+              <p className="text-slate-400">Redirecting to your dashboard...</p>
+            </motion.div>
+          )}
+
+          {/* Step 0: Role Selection */}
+          {!success && step === 0 && (
+            <motion.div
+              key="role-select"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-white mb-2">Welcome, {user?.firstName || 'there'}!</h2>
+                <p className="text-slate-400">Choose how you want to use Pro-Guide</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <RoleCard
-                  icon={<GraduationCap size={40} />}
-                  title="Student"
-                  description="Optimize your resume and track skill gaps for your dream job."
-                  onClick={() => handleSelect('student')}
-                />
-                <RoleCard
-                  icon={<Building2 size={40} />}
-                  title="Organisation"
-                  description="Post jobs and find the best talent using AI-powered matching."
-                  onClick={() => handleSelect('organisation')}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Candidate Option */}
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setRole('candidate');
+                    handleCandidateSelection();
+                  }}
+                  disabled={isSubmitting}
+                  className="relative p-6 rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 to-orange-600/5 hover:border-orange-500/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:shadow-orange-500/50 transition-all">
+                      <User className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white mb-1">Job Seeker</h3>
+                      <p className="text-sm text-slate-400">Find jobs that match your skills</p>
+                    </div>
+                  </div>
+                  {isSubmitting && role === 'candidate' && (
+                    <div className="absolute inset-0 bg-slate-900/50 rounded-2xl flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+                    </div>
+                  )}
+                </motion.button>
+
+                {/* Recruiter Option */}
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setRole('recruiter');
+                    setStep(1);
+                  }}
+                  disabled={isSubmitting}
+                  className="relative p-6 rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/10 to-blue-600/5 hover:border-blue-500/50 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all">
+                      <Building2 className="w-8 h-8 text-white" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white mb-1">Recruiter</h3>
+                      <p className="text-sm text-slate-400">Post jobs & find talent</p>
+                    </div>
+                  </div>
+                </motion.button>
               </div>
             </motion.div>
-          ) : (
+          )}
+
+          {/* Step 1: Company Registration Form */}
+          {!success && step === 1 && role === 'recruiter' && (
             <motion.div
-              key="step-auth"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-center space-y-8"
+              key="recruiter-form"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
             >
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold text-white">Great choice!</h2>
-                <p className="text-slate-400">Now, let's {isSignedIn ? 'finalize' : 'create'} your account as a <span className="text-blue-400 font-bold capitalize">{currentRole}</span></p>
+              <button
+                onClick={() => setStep(0)}
+                className="text-slate-400 hover:text-white transition-colors text-sm flex items-center gap-1"
+              >
+                ← Back
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <Briefcase className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">Company Profile</h2>
+                <p className="text-slate-400">Tell us about your company</p>
               </div>
 
-              <div className="flex flex-col gap-4">
-                {!isSignedIn ? (
+              {/* Error Display */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3"
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <p className="text-red-400 text-sm">{error}</p>
+                </motion.div>
+              )}
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">
+                    Company Name <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    placeholder="e.g. Acme Inc."
+                    value={companyData.companyName}
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    onChange={(e) => setCompanyData({ ...companyData, companyName: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Website</label>
+                  <input
+                    placeholder="https://yourcompany.com"
+                    value={companyData.website}
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    onChange={(e) => setCompanyData({ ...companyData, website: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Industry</label>
+                  <input
+                    placeholder="e.g. Technology, Healthcare, Finance"
+                    value={companyData.industry}
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    onChange={(e) => setCompanyData({ ...companyData, industry: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Company Size</label>
+                  <select
+                    value={companyData.size}
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer"
+                    onChange={(e) => setCompanyData({ ...companyData, size: e.target.value })}
+                  >
+                    <option value="Startup" className="bg-slate-800">Startup (1-10)</option>
+                    <option value="Small" className="bg-slate-800">Small (11-50)</option>
+                    <option value="Medium" className="bg-slate-800">Medium (51-200)</option>
+                    <option value="Large" className="bg-slate-800">Large (201-1000)</option>
+                    <option value="Enterprise" className="bg-slate-800">Enterprise (1000+)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Description</label>
+                  <textarea
+                    placeholder="Tell candidates about your company culture, mission, and values..."
+                    value={companyData.description}
+                    rows={4}
+                    className="w-full p-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                    onChange={(e) => setCompanyData({ ...companyData, description: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={finishCompanyRegistration}
+                disabled={isSubmitting}
+                className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-bold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
                   <>
-                    <button
-                      onClick={() => openSignUp({ forceRedirectUrl: '/register' })}
-                      className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/20"
-                    >
-                      Get Started <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                    </button>
-                    <div className="relative py-4">
-                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
-                      <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-900 px-2 text-slate-500 font-semibold tracking-widest leading-6">Already have an account?</span></div>
-                    </div>
-                    <button
-                      onClick={() => openSignIn({ forceRedirectUrl: '/register' })}
-                      className="w-full py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-bold text-lg transition-all"
-                    >
-                      Sign In
-                    </button>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating Company...
                   </>
                 ) : (
-                  <div className="p-8 bg-blue-500/10 border border-blue-500/30 rounded-2xl text-blue-100 flex items-center gap-4">
-                    <Loader2 className="animate-spin text-blue-400" />
-                    <span className="font-medium font-mono text-sm uppercase tracking-wider">Syncing Role...</span>
-                  </div>
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Complete Setup
+                  </>
                 )}
-
-                <button
-                  onClick={() => {
-                    setDesignation(null);
-                    localStorage.removeItem("selected_designation");
-                  }}
-                  className="text-sm text-slate-500 hover:text-white transition-colors pt-4"
-                >
-                  Change Designation
-                </button>
-              </div>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
     </div>
-  );
-}
-
-function RoleCard({ icon, title, description, onClick, color }) {
-  return (
-    <button
-      onClick={onClick}
-      className="group relative flex flex-col items-center p-8 bg-white/5 border border-white/10 rounded-3xl text-center hover:bg-white/10 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] shadow-xl"
-    >
-      <div className={`mb-4 p-4 rounded-2xl bg-slate-800 text-white group-hover:bg-blue-600 transition-colors duration-300`}>
-        {icon}
-      </div>
-      <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-      <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
-      <div className="mt-6 text-blue-400 font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        Select <ArrowRight size={16} />
-      </div>
-    </button>
   );
 }
