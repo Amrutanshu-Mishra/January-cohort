@@ -28,7 +28,7 @@ export default function Header() {
             {/* Logo */}
             <div className="flex items-center">
               <h1 className="text-5xl font-bold text-white">
-                ResumeAI
+                SKILL-Sync
               </h1>
             </div>
 

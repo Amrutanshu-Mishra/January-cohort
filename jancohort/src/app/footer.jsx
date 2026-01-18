@@ -8,7 +8,7 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Brand Section */}
                     <div className="space-y-4">
-                        <h2 className="text-3xl font-bold text-white tracking-tight">ResumeAI</h2>
+                        <h2 className="text-3xl font-bold text-white tracking-tight">SKILL-Sync</h2>
                         <p className="text-sm leading-relaxed text-slate-400">
                             Elevating careers with AI-powered insights. Build, optimize, and succeed with the next generation of resume technology.
                         </p>
