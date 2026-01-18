@@ -142,10 +142,24 @@ export async function deleteJob(jobId, getToken) {
 }
 
 /**
- * Apply to a job
+ * Evaluate skill gap for a job before applying
+ * Returns analysis and whether there's a significant gap
  */
-export async function applyToJob(jobId, getToken) {
-     return apiRequest(`/jobs/${jobId}/apply`, { method: 'POST' }, getToken);
+export async function evaluateSkillGap(jobId, getToken) {
+     return apiRequest(`/jobs/${jobId}/evaluate-gap`, { method: 'POST' }, getToken);
+}
+
+/**
+ * Apply to a job
+ * @param {string} jobId - Job ID
+ * @param {function} getToken - Clerk's getToken function  
+ * @param {boolean} skipGapCheck - Skip gap check if already reviewed roadmap
+ */
+export async function applyToJob(jobId, getToken, skipGapCheck = false) {
+     return apiRequest(`/jobs/${jobId}/apply`, {
+          method: 'POST',
+          body: JSON.stringify({ skipGapCheck }),
+     }, getToken);
 }
 
 // ============ COMPANY JOB MANAGEMENT APIs ============

@@ -63,7 +63,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-                    <p>&copy; {new Date().getFullYear()} ResumeAI. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} SKILL-Sync. All rights reserved.</p>
                     <div className="flex gap-6">
                         <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
                         <Link href="#" className="hover:text-white transition-colors">Cookies</Link>

@@ -19,11 +19,24 @@ import WaveParticles from "@/components/WaveParticles";
 import Footer from "./footer";
 
 export default function Home() {
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
   const handleGetStarted = () => {
-    router.push("/register");
+    if (isSignedIn && isLoaded) {
+      const role = user?.publicMetadata?.role;
+      if (role === 'company') {
+        router.push("/recruiter-dashboard");
+      } else if (role === 'user') {
+        router.push("/dashboard");
+      } else {
+        // Signed in but no role (onboarding incomplete)
+        router.push("/register");
+      }
+    } else {
+      // Not signed in
+      router.push("/register");
+    }
   };
 
   const text = "Let us guide you to your success";

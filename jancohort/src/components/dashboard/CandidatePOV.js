@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import {
@@ -26,6 +27,7 @@ import {
   getJobs,
   uploadResumeToS3,
   applyToJob,
+  evaluateSkillGap,
   analyzeResume,
   getResumeAnalysis
 } from "@/lib/api";
@@ -33,6 +35,7 @@ import {
 export default function CandidatePOV() {
   const { user } = useUser();
   const { getToken } = useAuth();
+  const router = useRouter();
 
   const [profile, setProfile] = useState(null);
   const [jobs, setJobs] = useState([]);
@@ -43,6 +46,7 @@ export default function CandidatePOV() {
 
   // Application state
   const [applyingTo, setApplyingTo] = useState(null);
+  const [evaluatingJob, setEvaluatingJob] = useState(null); // For skill gap evaluation
   const [applySuccess, setApplySuccess] = useState(null);
   const [applyError, setApplyError] = useState(null);
 
@@ -107,13 +111,45 @@ export default function CandidatePOV() {
     }
   };
 
-  // Handle job application
+  // Handle job application with skill gap evaluation
   const handleApply = async (jobId, jobTitle) => {
-    setApplyingTo(jobId);
+    // Check if user has resume first
+    if (!profile?.resume) {
+      setApplyError({ jobId, message: 'Please upload your resume first to apply' });
+      return;
+    }
+
+    setEvaluatingJob(jobId);
     setApplyError(null);
 
     try {
-      await applyToJob(jobId, getToken);
+      // First, evaluate skill gap
+      const gapResult = await evaluateSkillGap(jobId, getToken);
+
+      if (gapResult.hasSignificantGap) {
+        // Redirect to roadmap page with analysis data
+        const dataParam = encodeURIComponent(JSON.stringify({
+          jobTitle: gapResult.jobTitle,
+          companyName: gapResult.companyName,
+          matchPercentage: gapResult.matchPercentage,
+          matchSummary: gapResult.matchSummary,
+          strengths: gapResult.strengths,
+          criticalGaps: gapResult.criticalGaps,
+          proficiencyGaps: gapResult.proficiencyGaps,
+          recommendedActions: gapResult.recommendedActions,
+          timelineAssessment: gapResult.timelineAssessment,
+          jobId: jobId
+        }));
+
+        router.push(`/roadmap/${jobId}?data=${dataParam}`);
+        return;
+      }
+
+      // No significant gap - proceed with application
+      setApplyingTo(jobId);
+      setEvaluatingJob(null);
+
+      await applyToJob(jobId, getToken, true);
       setApplySuccess({ jobId, jobTitle });
 
       // Refresh profile to get updated target jobs
@@ -126,6 +162,7 @@ export default function CandidatePOV() {
       setApplyError({ jobId, message: error.message });
     } finally {
       setApplyingTo(null);
+      setEvaluatingJob(null);
     }
   };
 
@@ -343,10 +380,12 @@ export default function CandidatePOV() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => handleApply(job.id, job.role)}
-                          disabled={applyingTo === job.id}
+                          disabled={applyingTo === job.id || evaluatingJob === job.id}
                           className="mt-3 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm rounded-lg font-medium hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/20 disabled:opacity-50 flex items-center gap-2"
                         >
-                          {applyingTo === job.id ? (
+                          {evaluatingJob === job.id ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" />Analyzing Skills...</>
+                          ) : applyingTo === job.id ? (
                             <><Loader2 className="w-4 h-4 animate-spin" />Applying...</>
                           ) : (
                             <>Apply Now<ChevronRight className="w-4 h-4" /></>
@@ -575,25 +614,56 @@ export default function CandidatePOV() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10"
+                    className="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-all"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex-1">
                         <h3 className="text-lg font-bold text-white">{job.title}</h3>
                         <p className="text-slate-400">{job.company || 'Company'}</p>
+
+                        {/* Show skill gap summary if analysis completed */}
+                        {job.analysisStatus === 'Completed' && (
+                          <div className="mt-3 flex flex-wrap items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${job.matchPercentage >= 80 ? 'bg-green-500/20 text-green-400' :
+                              job.matchPercentage >= 60 ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-red-500/20 text-red-400'
+                              }`}>
+                              {job.matchPercentage}% Match
+                            </span>
+                            {job.criticalGaps?.length > 0 && (
+                              <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-xs font-medium">
+                                {job.criticalGaps.length} skill gaps
+                              </span>
+                            )}
+                            {job.recommendedActions?.length > 0 && (
+                              <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">
+                                {job.recommendedActions.length} learning tasks
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-right">
+
+                      <div className="flex items-center gap-3">
+                        {job.analysisStatus === 'Completed' && job.jobId && (
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => router.push(`/roadmap/${job.jobId}`)}
+                            className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm rounded-lg font-medium hover:opacity-90 transition-all flex items-center gap-2"
+                          >
+                            <Target className="w-4 h-4" />
+                            View Roadmap
+                          </motion.button>
+                        )}
                         <span className={`px-3 py-1 rounded-lg text-sm font-medium ${job.analysisStatus === 'Completed'
-                            ? 'bg-green-500/20 text-green-400'
-                            : job.analysisStatus === 'Failed'
-                              ? 'bg-red-500/20 text-red-400'
-                              : 'bg-yellow-500/20 text-yellow-400'
+                          ? 'bg-green-500/20 text-green-400'
+                          : job.analysisStatus === 'Failed'
+                            ? 'bg-red-500/20 text-red-400'
+                            : 'bg-yellow-500/20 text-yellow-400'
                           }`}>
                           {job.analysisStatus}
                         </span>
-                        {job.matchPercentage && (
-                          <p className="mt-2 text-2xl font-bold text-orange-400">{job.matchPercentage}%</p>
-                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -613,8 +683,8 @@ function NavItem({ icon, label, active = false, onClick }) {
       whileHover={{ x: 4 }}
       onClick={onClick}
       className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${active
-          ? 'bg-gradient-to-r from-orange-500/20 to-orange-600/10 text-orange-400 border border-orange-500/20'
-          : 'text-slate-400 hover:bg-white/5 hover:text-white'
+        ? 'bg-gradient-to-r from-orange-500/20 to-orange-600/10 text-orange-400 border border-orange-500/20'
+        : 'text-slate-400 hover:bg-white/5 hover:text-white'
         }`}
     >
       {icon}

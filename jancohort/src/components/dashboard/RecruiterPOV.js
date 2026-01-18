@@ -97,7 +97,7 @@ export default function RecruiterPOV() {
     fetchData();
   }, [getToken]);
 
-  // Handle job creation
+  // Handle job creation with AWS email notification
   const handleCreateJob = async () => {
     if (!newJob.title.trim() || !newJob.description.trim()) {
       setError('Title and description are required');
@@ -115,9 +115,26 @@ export default function RecruiterPOV() {
         companyName: company.companyName
       };
 
-      const result = await createJob(jobData, getToken);
+      // --- PARALLEL EXECUTION START ---
+      // We fire both at once. 
+      // We await createJob for the UI, but we let the AWS fetch run independently.
+      const [result] = await Promise.all([
+        createJob(jobData, getToken), // 1. Save to MongoDB
+        fetch('https://klfcmxndj6.execute-api.ap-south-1.amazonaws.com/job-posted', { // 2. Trigger AWS Pipeline
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'cors', // Explicitly handle CORS
+          body: JSON.stringify({
+            title: jobData.title,
+            skills: jobData.requirements, // This goes to your Lambda matching logic
+            companyName: jobData.companyName
+          })
+        }).catch(awsErr => console.error("AWS Sync failed independently:", awsErr))
+      ]);
+      // --- PARALLEL EXECUTION END ---
+
       setJobs([result.job, ...jobs]);
-      setSuccess('Job posted successfully!');
+      setSuccess('Job posted and matching emails are being sent!');
       setShowJobModal(false);
       setNewJob({ title: '', description: '', requirements: '', location: '', salary: '', type: 'Full-time' });
 
